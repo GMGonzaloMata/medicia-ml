@@ -13,6 +13,10 @@ dev = [
   "pytest>=8",
   "pytest-cov>=5",
 ]
+# Solo para invoke_endpoint.py contra un punto de inferencia real de SageMaker (no entra en la imagen).
+verify = [
+  "boto3>=1.35",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

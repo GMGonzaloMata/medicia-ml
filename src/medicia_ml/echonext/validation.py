@@ -20,7 +20,8 @@ def parse_request(body: bytes) -> tuple[np.ndarray, np.ndarray]:
     """Devuelve (onda de forma (2500, 12), variables de forma (7,)), ambas float32 y finitas."""
     try:
         payload = json.loads(body)
-    except (ValueError, UnicodeDecodeError):
+    except (ValueError, UnicodeDecodeError, RecursionError):
+        # RecursionError: un JSON anidado miles de veces cabe en el tope de tamaño y rompe el analizador.
         raise InputError("El cuerpo no es un JSON válido.") from None
     if not isinstance(payload, dict):
         raise InputError("El cuerpo debe ser un objeto JSON con 'waveform' y 'tabular'.")
@@ -48,8 +49,12 @@ def parse_request(body: bytes) -> tuple[np.ndarray, np.ndarray]:
     if tabular[0] not in (0, 1):
         raise InputError("El sexo (primera variable de 'tabular') debe ser 0 o 1.")
 
-    wave_array = np.asarray(waveform, dtype=np.float32)
-    tab_array = np.asarray(tabular, dtype=np.float32)
+    try:
+        wave_array = np.asarray(waveform, dtype=np.float32)
+        tab_array = np.asarray(tabular, dtype=np.float32)
+    except (OverflowError, ValueError):
+        # Un entero con cientos de dígitos pasa como número pero no entra en float32.
+        raise InputError("Hay valores numéricos fuera de rango.") from None
     if not np.isfinite(wave_array).all():
         raise InputError("'waveform' contiene valores no finitos.")
     if not np.isfinite(tab_array).all():

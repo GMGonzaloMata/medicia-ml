@@ -15,6 +15,7 @@ Imprime solo índices y diferencias máximas. Guarda las probabilidades de refer
 """
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import sys
@@ -31,11 +32,20 @@ from medicia_ml.echonext.predict import Predictor, load_model  # noqa: E402
 
 TOLERANCE = 0.001
 
+# SHA-256 de cradlenet/models/resnet1d_tabular.py en el commit 15233e9392e9dc10c136a5624abf10199207bce9 de IntroECG.
+# Se verifica antes de ejecutar el archivo: este script corre con las credenciales de AWS del responsable a mano.
+ORIGINAL_SHA256 = "445d93f94534ee12af2e6839b57182b561ead688dd4cfd11224a6fb148748016"
 
-def load_original(original_dir: Path, weights_path: Path) -> torch.nn.Module:
+
+def load_original(original_dir: Path, weights_path: Path, expected_sha256: str | None = ORIGINAL_SHA256) -> torch.nn.Module:
     source = original_dir / "cradlenet" / "models" / "resnet1d_tabular.py"
     if not source.exists():
         raise SystemExit(f"No encuentro {source}. Revisá --original-dir (clon de IntroECG en el commit fijado).")
+    if expected_sha256 is not None and hashlib.sha256(source.read_bytes()).hexdigest() != expected_sha256:
+        raise SystemExit(
+            f"{source} no coincide con el archivo del commit fijado de IntroECG: no se ejecuta. "
+            "Volvé a clonar y hacé checkout del commit 15233e9392e9dc10c136a5624abf10199207bce9."
+        )
     spec = importlib.util.spec_from_file_location("echonext_original_resnet", source)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -69,7 +79,7 @@ def main() -> int:
     waves, tabs = load_studies(args.data_dir, indices)
 
     weights = args.model_dir / "weights.pt"
-    original = load_original(args.original_dir, weights)
+    original = load_original(args.original_dir, weights, ORIGINAL_SHA256)
     mine = Predictor(load_model(weights), "parity")
 
     reference: list[list[float]] = []

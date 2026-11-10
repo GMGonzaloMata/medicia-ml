@@ -1,0 +1,9 @@
+#!/bin/sh
+# Gancho local: impide commitear pesos, datos o artefactos (FR-022 de la 005). Se activa una vez por clon con:
+#   git config core.hooksPath .githooks
+prohibidos=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=ACMR | grep -iE '\.(pt|pth|npy|npz|joblib|pkl|pickle|h5|onnx|safetensors|zip|xml|parquet|csv|tar\.gz|tgz)$|(^|/)reference\.json$|_labels\.json$' || true)
+if [ -n "$prohibidos" ]; then
+  echo "No se commitea: hay pesos, datos o artefactos en el cambio (FR-022):"
+  echo "$prohibidos"
+  exit 1
+fi

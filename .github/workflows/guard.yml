@@ -1,0 +1,27 @@
+name: Guarda de datos y pesos
+
+# Este repositorio no versiona pesos, datos del conjunto EchoNext-Mini ni artefactos. .gitignore los bloquea,
+# pero "git add -f" lo saltea: esta comprobación falla si algo así llega a una propuesta de cambio.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  guarda:
+    name: Sin pesos ni datos versionados
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Comprobar archivos prohibidos
+        run: |
+          # Pesos, datos y artefactos nunca se versionan (FR-022 de la 005). Se mira todo lo versionado.
+          prohibidos=$(git -c core.quotePath=false ls-files | grep -iE '\.(pt|pth|npy|npz|joblib|pkl|pickle|h5|onnx|safetensors|zip|xml|parquet|csv|tar\.gz|tgz)$|(^|/)reference\.json$|_labels\.json$' || true)
+          if [ -n "$prohibidos" ]; then
+            echo "::error::Hay pesos, datos o artefactos versionados (FR-022 de la 005):"
+            echo "$prohibidos"
+            exit 1
+          fi

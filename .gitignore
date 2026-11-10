@@ -7,6 +7,14 @@
 *.csv
 *.tar.gz
 *.parquet
+*.zip
+*.xml
+*.pkl
+*.pickle
+*.h5
+*.onnx
+*.safetensors
+*_labels.json
 data/
 samples/
 reference.json

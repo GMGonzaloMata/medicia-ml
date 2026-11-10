@@ -1,5 +1,7 @@
 # Imagen de inferencia de EchoNext-Mini. Sin acceso a internet en ejecución: todo se instala al construir.
-# Construir:  docker build --platform linux/amd64 --build-arg MODEL_VERSION=0.1.0 -t medicia-dev-echonext-mini:0.1.0 .
+# Construir:  docker build --platform linux/amd64 --provenance=false --sbom=false --build-arg MODEL_VERSION=0.1.0 -t medicia-dev-echonext-mini:0.1.0 .
+# Sin atestaciones (--provenance=false --sbom=false): con ellas Docker sube un índice de manifiestos en lugar de una
+# imagen simple, y SageMaker necesita una imagen de un solo manifiesto.
 FROM python:3.11-slim-bookworm
 
 ARG MODEL_VERSION=unknown

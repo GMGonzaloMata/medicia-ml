@@ -19,6 +19,9 @@ def make_server(predictor: Predictor, host: str = "0.0.0.0", port: int = 8080) -
     lock = threading.Lock()
 
     class Handler(BaseHTTPRequestHandler):
+        # Tiempo máximo de espera de lectura: un cliente lento no ocupa un hilo indefinidamente.
+        timeout = 30
+
         def _send(self, status: int, payload: dict[str, object] | None = None) -> None:
             body = b"" if payload is None else json.dumps(payload).encode("utf-8")
             self.send_response(status)
@@ -66,7 +69,7 @@ def make_server(predictor: Predictor, host: str = "0.0.0.0", port: int = 8080) -
 
         def log_message(self, format: str, *args: object) -> None:  # noqa: A002
             # Solo método y ruta: nunca el contenido de la solicitud.
-            logger.info("%s %s", self.command, self.path)
+            logger.info("%s %s", getattr(self, "command", "-"), getattr(self, "path", "-"))
 
     return ThreadingHTTPServer((host, port), Handler)
 

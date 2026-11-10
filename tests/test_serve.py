@@ -98,3 +98,10 @@ def test_logs_do_not_contain_study_values(base_url, caplog):
     with caplog.at_level(logging.INFO, logger="medicia_ml"):
         call(f"{base_url}/invocations", body=encode(payload))
     assert marker not in caplog.text
+
+
+def test_nested_json_and_huge_integer_return_400(base_url):
+    nested = b'{"waveform": ' + b"[" * 100000 + b"]" * 100000 + b', "tabular": []}'
+    assert call(f"{base_url}/invocations", body=nested)[0] == 400
+    text = json.dumps(valid_payload()).replace(json.dumps(valid_payload()["waveform"][0][0]), "9" * 400, 1)
+    assert call(f"{base_url}/invocations", body=text.encode("utf-8"))[0] == 400

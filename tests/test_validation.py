@@ -76,3 +76,16 @@ def test_sex_accepts_float_zero_and_one():
     parse_request(encode(payload))
     payload["tabular"][0] = 1.0
     parse_request(encode(payload))
+
+
+def test_deeply_nested_json_is_rejected_as_invalid_input():
+    body = b'{"waveform": ' + b"[" * 100000 + b"]" * 100000 + b', "tabular": []}'
+    with pytest.raises(InputError, match="JSON"):
+        parse_request(body)
+
+
+def test_huge_integer_is_rejected_as_out_of_range():
+    payload = valid_payload()
+    text = json.dumps(payload).replace(json.dumps(payload["waveform"][0][0]), "9" * 400, 1)
+    with pytest.raises(InputError, match="fuera de rango"):
+        parse_request(text.encode("utf-8"))

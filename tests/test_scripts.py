@@ -160,6 +160,7 @@ def test_check_parity_end_to_end_with_stand_in_original(tmp_path, weights_path, 
     model_dir.mkdir()
     (model_dir / "weights.pt").write_bytes(weights_path.read_bytes())
     reference = tmp_path / "ref" / "reference.json"
+    monkeypatch.setattr(check_parity, "ORIGINAL_SHA256", None)
     monkeypatch.setattr(
         sys,
         "argv",
@@ -179,4 +180,13 @@ def test_check_parity_fails_when_original_is_missing(tmp_path, weights_path, mon
     import check_parity
 
     with pytest.raises(SystemExit, match="No encuentro"):
+        check_parity.load_original(tmp_path, weights_path)
+
+
+def test_check_parity_refuses_an_original_that_does_not_match_the_pinned_file(tmp_path, weights_path):
+    import check_parity
+
+    (tmp_path / "cradlenet" / "models").mkdir(parents=True)
+    (tmp_path / "cradlenet" / "models" / "resnet1d_tabular.py").write_text("raise SystemExit('no debería ejecutarse')", encoding="utf-8")
+    with pytest.raises(SystemExit, match="no coincide"):
         check_parity.load_original(tmp_path, weights_path)
