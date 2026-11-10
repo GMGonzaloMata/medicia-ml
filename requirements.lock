@@ -1,0 +1,13 @@
+# Dependencias de ejecución con versiones exactas (imagen de inferencia, solo CPU).
+# Instalar con: pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.lock
+# Generado el 2026-11-10 con Python 3.11 en Windows; en Linux pip puede sumar dependencias propias de la plataforma.
+filelock==4.2.10
+fsspec==2026.9.0
+Jinja2==3.1.6
+MarkupSafe==3.0.4
+mpmath==1.3.0
+networkx==3.6.1
+numpy==2.4.6
+sympy==1.14.0
+torch==2.15.0+cpu
+typing_extensions==4.16.0

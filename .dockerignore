@@ -1,0 +1,16 @@
+.git
+.venv
+tests
+scripts
+data
+samples
+*.pt
+*.pth
+*.npy
+*.npz
+*.joblib
+*.csv
+*.tar.gz
+reference.json
+__pycache__
+.pytest_cache
